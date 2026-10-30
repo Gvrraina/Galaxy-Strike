@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class LaserProjectile : MonoBehaviour
@@ -5,22 +6,33 @@ public class LaserProjectile : MonoBehaviour
     public float speed = 60f;
     public float lifetime = 3f;
 
-    void Start()
-    {
-        Destroy(gameObject, lifetime);
-    }
+    private float timer;
 
     void Update()
     {
-        transform.position +=
-            transform.forward * speed * Time.deltaTime;
-    }
+        float distance = speed * Time.deltaTime;
 
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-            return;
+        // Check for objects in front of the laser
+        if (Physics.Raycast(
+            transform.position,
+            transform.forward,
+            out RaycastHit hit,
+            distance
+        ))
+        {
+            if (!hit.collider.CompareTag("Player"))
+            {
+                Debug.Log("Laser hit: " + hit.collider.name);
+                Destroy(gameObject);
+                return;
+            }
+        }
 
-        Destroy(gameObject);
+        transform.position += transform.forward * distance;
+
+        timer += Time.deltaTime;
+
+        if (timer >= lifetime)
+            Destroy(gameObject);
     }
 }
